@@ -1,15 +1,16 @@
 {
   "name": "projeto-chamados-ti",
   "version": "1.0.0",
-  "description": "",
+  "description": "API RESTful para Sistema de Chamados de Suporte T.I. - Projeto Integrador PBE1 SENAI",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "./testes_automacao.sh"
   },
-  "keywords": [],
-  "type": "commonjs",
+  "keywords": ["express", "nodejs", "rest", "senai", "pbe1", "debian"],
+  "author": "Erick Simionato Santos e Arthur Walcafre Oliveira",
+  "license": "ISC",
   "dependencies": {
-    "express": "^5.3.0"
+    "express": "^4.19.2"
   }
 }
