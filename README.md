@@ -1,4 +1,4 @@
-🛠️ Sistema de Chamados de T.I. - API RESTfulProjeto Integrador - Programação Back-End 1 (PBE1) | SENAIAutores: Erick S. Santos e Arthur Walcafre OliveiraAmbiente Alvo: Linux Debian📋 SumárioVisão Geral e Arquitetura da APIMapeamento de Endpoints e Métodos HTTPCódigos de Resposta HTTP UtilizadosCódigo-Fonte dos Arquivos do Projetopackage.jsonserver.jstestes_automacao.shComandos e Procedimentos Operacionais (Debian & cURL)1. Visão Geral e Arquitetura da APIEste documento reúne a especificação técnica completa, códigos-fonte, rotinas de testes automatizados e procedimentos operacionais no Linux Debian para o projeto integrador de Back-End 1.A aplicação é uma API RESTful desenvolvida em Node.js com Express para gerenciamento de chamados e suporte de TI. O sistema gerencia duas entidades principais com integridade relacional mantida em memória:Entidade Técnicos (/api/v1/tecnicos): Profissionais de TI cadastrados no sistema, identificados por ID, nome, e-mail e especialidade (ex: REDES, HARDWARE, SOFTWARE).Entidade Chamados (/api/v1/chamados): Solicitações de suporte contendo título, descrição, prioridade (BAIXA, MEDIA, ALTA), status (ABERTO, EM_ANDAMENTO, FECHADO) e vínculo com o técnico responsável (tecnicoId).2. Mapeamento de Endpoints e Métodos HTTP👨‍💻 Entidade: Técnicos (/api/v1/tecnicos)MétodoEndpointParâmetrosDescriçãoGET/api/v1/tecnicosQuery: especialidadeLista todos os técnicos (suporta filtro por especialidade).GET/api/v1/tecnicos/:idPath: idRetorna os detalhes de um técnico específico.POST/api/v1/tecnicosBody: JSONCadastra um novo técnico (Retorna status 201 Created).PUT/api/v1/tecnicos/:idPath: id / Body: JSONSubstituição completa dos dados de um técnico.PATCH/api/v1/tecnicos/:idPath: id / Body: JSONAtualização parcial de campos específicos.DELETE/api/v1/tecnicos/:idPath: idRemove um técnico (desvincula dos chamados associados).🎫 Entidade: Chamados (/api/v1/chamados)MétodoEndpointParâmetrosDescriçãoGET/api/v1/chamadosQuery: status, prioridadeLista chamados com filtros flexíveis via Query Param.GET/api/v1/chamados/:idPath: idRetorna os detalhes de um chamado específico.POST/api/v1/chamadosBody: JSONCria chamado vinculado a técnico (Status padrão: ABERTO).PUT/api/v1/chamados/:idPath: id / Body: JSONAtualização completa do chamado.PATCH/api/v1/chamados/:idPath: id / Body: JSONAtualização parcial (ex: alterar status para FECHADO).DELETE/api/v1/chamados/:idPath: idExclui um chamado do sistema.3. Códigos de Resposta HTTP Utilizados200 OK — Sucesso Geral: Retornado em GET, PUT, PATCH e DELETE bem-sucedidos.201 Created — Criado: Retornado em requisições POST com cadastro realizado com sucesso.400 Bad Request — Requisição Inválida: Payload incompleto, JSON malformatado ou dados inválidos (ex: técnico, status ou prioridade ausentes/inválidos).404 Not Found — Não Encontrado: Recurso por ID não localizado no banco em memória ou rota inexistente.4. Código-Fonte dos Arquivos do Projeto4.1. package.json{
+ Binario-tech — Consultoria e Desenvolvimento Back-EndRepositório central de práticas, APIs RESTful, automações em scripts Bash e projeto integrador resolvidos durante a disciplina de Programação Back-End 1 (PBE1). A aplicação simula o sistema de gerenciamento de suporte e chamados da consultoria Binario Tech.👨‍💻 Informações do ProjetoParâmetroDetalhes👨‍💻 Autores / IntegrantesErick Simionato Santos & Arthur Walcafre Oliveira👨‍🏫 OrientadorProf. Irineu Moura Caldeira📦 RepositórioBinario-tech📚 DisciplinaProgramação Back-End 1 (PBE1)🔌 Porta de Execução Padrão3009 (De acordo com o número da chamada: 09)⚙️ Linguagem / RuntimeNode.js (v18+) & Express.js📖 Sobre a Binario TechA Binario Tech é um ambiente prático de aprendizado voltado ao desenvolvimento web no lado do servidor. Por meio de simulações do mercado corporativo, exercitam-se a construção de APIs, gerenciamento de processos no ecossistema Linux, segurança de endpoints via Middlewares, automação via scripts e manipulação estruturada de dados JSON.📌 Sumário Navegável📖 Sobre a Binario Tech👨‍💻 Informações do Projeto🛠️ 1. Visão Geral e Arquitetura da API🗺️ 2. Mapeamento de Endpoints e Métodos HTTP2.1. Entidade: Técnicos (/api/v1/tecnicos)2.2. Entidade: Chamados (/api/v1/chamados)2.3. Códigos de Resposta HTTP💻 3. Código-Fonte dos Arquivos do Projeto3.1. package.json3.2. server.js3.3. testes_automacao.sh🐧 4. Comandos e Procedimentos Operacionais (Debian & cURL)🛠️ 1. Visão Geral e Arquitetura da APIEste documento reúne a especificação técnica completa, códigos-fonte, rotinas de testes automatizados e procedimentos operacionais no Linux Debian para o projeto integrador de Back-End 1.A aplicação é uma API RESTful desenvolvida em Node.js com Express para gerenciamento de suporte de TI. O sistema gerencia duas entidades principais com integridade relacional em memória:👨‍💼 Entidade Técnicos (/api/v1/tecnicos): Profissionais de TI cadastrados no sistema, identificados por ID, nome, e-mail e especialidade (ex: REDES, HARDWARE, SOFTWARE).🎫 Entidade Chamados (/api/v1/chamados): Solicitações de suporte contendo título, descrição, prioridade (BAIXA, MEDIA, ALTA), status (ABERTO, EM_ANDAMENTO, FECHADO) e vínculo com o técnico responsável (tecnicoId).💡 Regra de Integridade Relacional: Ao remover um técnico (DELETE), a API desvincula automaticamente todos os chamados sob a responsabilidade dele, ajustando o atributo tecnicoId para null.🗺️ 2. Mapeamento de Endpoints e Métodos HTTP2.1. Entidade: Técnicos (/api/v1/tecnicos)MétodoEndpointParâmetrosDescriçãoGET/api/v1/tecnicosQuery: especialidadeLista todos os técnicos (suporta filtro por especialidade)GET/api/v1/tecnicos/:idPath: idRetorna os detalhes de um técnico específicoPOST/api/v1/tecnicosBody: JSONCadastra um novo técnico (Retorna status 201 Created)PUT/api/v1/tecnicos/:idPath: id / Body: JSONSubstituição completa dos dados de um técnicoPATCH/api/v1/tecnicos/:idPath: id / Body: JSONAtualização parcial de campos específicosDELETE/api/v1/tecnicos/:idPath: idRemove um técnico (desvincula dos chamados)2.2. Entidade: Chamados (/api/v1/chamados)MétodoEndpointParâmetrosDescriçãoGET/api/v1/chamadosQuery: status, prioridadeLista chamados com filtros flexíveis via Query ParamGET/api/v1/chamados/:idPath: idRetorna os detalhes de um chamado específicoPOST/api/v1/chamadosBody: JSONCria chamado vinculado a técnico (Status padrão: ABERTO)PUT/api/v1/chamados/:idPath: id / Body: JSONAtualização completa do chamadoPATCH/api/v1/chamados/:idPath: id / Body: JSONAtualização parcial (ex: alterar status para FECHADO)DELETE/api/v1/chamados/:idPath: idExclui um chamado do sistema2.3. Códigos de Resposta HTTP Utilizados200 OK — Sucesso Geral: Retornado em GET, PUT, PATCH e DELETE bem-sucedidos.201 Created — Criado: Retornado em requisições POST com cadastro realizado.400 Bad Request — Requisição Inválida: Payload incompleto, JSON malformatado ou técnico/status/prioridade inválidos.404 Not Found — Não Encontrado: Recurso por ID não localizado no banco em memória ou rota inexistente.💻 3. Código-Fonte dos Arquivos do Projeto3.1. package.json{
   "name": "projeto-chamados-ti",
   "version": "1.0.0",
   "description": "API RESTful para Sistema de Chamados de Suporte T.I. - Projeto Integrador PBE1 SENAI",
@@ -15,13 +15,13 @@
     "pbe1",
     "debian"
   ],
-  "author": "Erick S. Santos e Arthur Walcafre Oliveira",
+  "author": "Erick Simionato Santos e Arthur Walcafre Oliveira",
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2"
   }
 }
-4.2. server.js (Aplicação Principal Express)const express = require('express');
+3.2. server.js (Aplicação Principal Express)const express = require('express');
 const app = express();
 const PORT = 3009;
 const BASE = '/api/v1';
@@ -248,7 +248,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`API de Chamados de T.I. rodando em http://localhost:${PORT}${BASE}`);
 });
-4.3. testes_automacao.sh (Script Bash)#!/bin/bash
+3.3. testes_automacao.sh (Script Bash de Testes)#!/bin/bash
 BASE="http://localhost:3009/api/v1"
 PASSOU=0
 FALHOU=0
@@ -335,30 +335,30 @@ echo ""
 echo "============================================================"
 echo " RESUMO: $PASSOU testes passaram | $FALHOU falharam"
 echo "============================================================"
-5. Comandos e Procedimentos Operacionais (Debian & cURL)5.1. Inicialização e Gerenciamento de ProcessosNavegue até o diretório do projeto e execute a aplicação em segundo plano ou visualize os processos em execução:# Entrar no diretório do projeto
+🐧 4. Comandos e Procedimentos Operacionais (Debian & cURL)4.1. Inicialização e Gerenciamento do Servidor# Navegar até o diretório do projeto
 cd ~/curso-pbe1/projeto-chamados-ti
 
 # Iniciar o servidor em segundo plano
 npm start &
 
-# Verificar se o processo Node.js está em execução
+# Listar processos para verificar a execução do Node.js
 ps aux | grep node
 
-# Caso precise encerrar o servidor (substitua pelo PID retornado)
+# Encerrar o processo do servidor (substitua PID pelo número encontrado)
 kill -9 <PID>
-5.2. Execução de Testes Automatizados e AuditoriaDê permissão de execução ao script Bash de automação e execute-o salvando os resultados em arquivo de log:# Conceder permissão de execução ao script
+4.2. Execução dos Testes Automatizados# Conceder permissão de execução ao script
 chmod +x testes_automacao.sh
 
-# Executar a suíte de testes e gerar log de resultado
+# Executar bateria de testes e gerar arquivo de log
 ./testes_automacao.sh | tee resultado_execucao.log
-5.3. Exemplos de Comandos Individuais via cURL (CRUD Prático)1. Cadastrar um novo técnico:curl -i -X POST http://localhost:3009/api/v1/tecnicos \
+4.3. Exemplos de Requisições via cURL (CRUD Prático)🔹 Cadastrar Técnico:curl -i -X POST http://localhost:3009/api/v1/tecnicos \
   -H "Content-Type: application/json" \
   -d '{"nome":"Marcos Lima","email":"marcos@empresa.com","especialidade":"SOFTWARE"}'
-2. Listar técnicos filtrando por especialidade:curl -i -X GET "http://localhost:3009/api/v1/tecnicos?especialidade=REDES"
-3. Abrir um novo chamado:curl -i -X POST http://localhost:3009/api/v1/chamados \
+🔹 Listar Técnicos por Especialidade:curl -i -X GET "http://localhost:3009/api/v1/tecnicos?especialidade=REDES"
+🔹 Criar Chamado:curl -i -X POST http://localhost:3009/api/v1/chamados \
   -H "Content-Type: application/json" \
   -d '{"titulo":"Impressora travada","descricao":"Papel agarrado","prioridade":"BAIXA","tecnicoId":1}'
-4. Atualizar parcialmente o status de um chamado:curl -i -X PATCH http://localhost:3009/api/v1/chamados/1 \
+🔹 Atualizar Status do Chamado (PATCH):curl -i -X PATCH http://localhost:3009/api/v1/chamados/1 \
   -H "Content-Type: application/json" \
   -d '{"status":"FECHADO"}'
-5. Excluir um chamado:curl -i -X DELETE http://localhost:3009/api/v1/chamados/1
+🔹 Remover Chamado:curl -i -X DELETE http://localhost:3009/api/v1/chamados/1
