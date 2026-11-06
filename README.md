@@ -109,7 +109,7 @@ projeto-chamados-ti/
 
 ## 🚀 Como executar
 
-**Pré-requisitos:** Node.js 18+, npm, Git, `curl` e `jq`.
+**Pré-requisitos:** Node.js, npm, Git, `curl` e `jq`.
 
 ```bash
 sudo apt update && sudo apt install -y curl jq
