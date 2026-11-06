@@ -1,364 +1,268 @@
- Binario-tech — Consultoria e Desenvolvimento Back-EndRepositório central de práticas, APIs RESTful, automações em scripts Bash e projeto integrador resolvidos durante a disciplina de Programação Back-End 1 (PBE1). A aplicação simula o sistema de gerenciamento de suporte e chamados da consultoria Binario Tech.👨‍💻 Informações do ProjetoParâmetroDetalhes👨‍💻 Autores / IntegrantesErick Simionato Santos & Arthur Walcafre Oliveira👨‍🏫 OrientadorProf. Irineu Moura Caldeira📦 RepositórioBinario-tech📚 DisciplinaProgramação Back-End 1 (PBE1)🔌 Porta de Execução Padrão3009 (De acordo com o número da chamada: 09)⚙️ Linguagem / RuntimeNode.js (v18+) & Express.js📖 Sobre a Binario TechA Binario Tech é um ambiente prático de aprendizado voltado ao desenvolvimento web no lado do servidor. Por meio de simulações do mercado corporativo, exercitam-se a construção de APIs, gerenciamento de processos no ecossistema Linux, segurança de endpoints via Middlewares, automação via scripts e manipulação estruturada de dados JSON.📌 Sumário Navegável📖 Sobre a Binario Tech👨‍💻 Informações do Projeto🛠️ 1. Visão Geral e Arquitetura da API🗺️ 2. Mapeamento de Endpoints e Métodos HTTP2.1. Entidade: Técnicos (/api/v1/tecnicos)2.2. Entidade: Chamados (/api/v1/chamados)2.3. Códigos de Resposta HTTP💻 3. Código-Fonte dos Arquivos do Projeto3.1. package.json3.2. server.js3.3. testes_automacao.sh🐧 4. Comandos e Procedimentos Operacionais (Debian & cURL)🛠️ 1. Visão Geral e Arquitetura da APIEste documento reúne a especificação técnica completa, códigos-fonte, rotinas de testes automatizados e procedimentos operacionais no Linux Debian para o projeto integrador de Back-End 1.A aplicação é uma API RESTful desenvolvida em Node.js com Express para gerenciamento de suporte de TI. O sistema gerencia duas entidades principais com integridade relacional em memória:👨‍💼 Entidade Técnicos (/api/v1/tecnicos): Profissionais de TI cadastrados no sistema, identificados por ID, nome, e-mail e especialidade (ex: REDES, HARDWARE, SOFTWARE).🎫 Entidade Chamados (/api/v1/chamados): Solicitações de suporte contendo título, descrição, prioridade (BAIXA, MEDIA, ALTA), status (ABERTO, EM_ANDAMENTO, FECHADO) e vínculo com o técnico responsável (tecnicoId).💡 Regra de Integridade Relacional: Ao remover um técnico (DELETE), a API desvincula automaticamente todos os chamados sob a responsabilidade dele, ajustando o atributo tecnicoId para null.🗺️ 2. Mapeamento de Endpoints e Métodos HTTP2.1. Entidade: Técnicos (/api/v1/tecnicos)MétodoEndpointParâmetrosDescriçãoGET/api/v1/tecnicosQuery: especialidadeLista todos os técnicos (suporta filtro por especialidade)GET/api/v1/tecnicos/:idPath: idRetorna os detalhes de um técnico específicoPOST/api/v1/tecnicosBody: JSONCadastra um novo técnico (Retorna status 201 Created)PUT/api/v1/tecnicos/:idPath: id / Body: JSONSubstituição completa dos dados de um técnicoPATCH/api/v1/tecnicos/:idPath: id / Body: JSONAtualização parcial de campos específicosDELETE/api/v1/tecnicos/:idPath: idRemove um técnico (desvincula dos chamados)2.2. Entidade: Chamados (/api/v1/chamados)MétodoEndpointParâmetrosDescriçãoGET/api/v1/chamadosQuery: status, prioridadeLista chamados com filtros flexíveis via Query ParamGET/api/v1/chamados/:idPath: idRetorna os detalhes de um chamado específicoPOST/api/v1/chamadosBody: JSONCria chamado vinculado a técnico (Status padrão: ABERTO)PUT/api/v1/chamados/:idPath: id / Body: JSONAtualização completa do chamadoPATCH/api/v1/chamados/:idPath: id / Body: JSONAtualização parcial (ex: alterar status para FECHADO)DELETE/api/v1/chamados/:idPath: idExclui um chamado do sistema2.3. Códigos de Resposta HTTP Utilizados200 OK — Sucesso Geral: Retornado em GET, PUT, PATCH e DELETE bem-sucedidos.201 Created — Criado: Retornado em requisições POST com cadastro realizado.400 Bad Request — Requisição Inválida: Payload incompleto, JSON malformatado ou técnico/status/prioridade inválidos.404 Not Found — Não Encontrado: Recurso por ID não localizado no banco em memória ou rota inexistente.💻 3. Código-Fonte dos Arquivos do Projeto3.1. package.json{
-  "name": "projeto-chamados-ti",
-  "version": "1.0.0",
-  "description": "API RESTful para Sistema de Chamados de Suporte T.I. - Projeto Integrador PBE1 SENAI",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "./testes_automacao.sh"
-  },
-  "keywords": [
-    "express",
-    "nodejs",
-    "rest",
-    "senai",
-    "pbe1",
-    "debian"
-  ],
-  "author": "Erick Simionato Santos e Arthur Walcafre Oliveira",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^4.19.2"
-  }
-}
-3.2. server.js (Aplicação Principal Express)const express = require('express');
-const app = express();
-const PORT = 3009;
-const BASE = '/api/v1';
+cd ~/curso-pbe1/projeto-chamados-ti && cat > README.md << 'EOF'
+<div align="center">
 
-app.use(express.json());
-app.use((req, res, next) => {
-  req.body = req.body || {};
-  next();
-});
+# 🛠️ API de Chamados de Suporte T.I.
 
-const STATUS_VALIDOS = ['ABERTO', 'EM_ANDAMENTO', 'FECHADO'];
-const PRIORIDADES_VALIDAS = ['BAIXA', 'MEDIA', 'ALTA'];
+**Projeto Final Integrador — Back-End 1 (PBE1)**
+SENAI / Binário Tech · Mauá · 2026
 
-let tecnicos = [
-  { id: 1, nome: 'Carlos Silva', email: 'carlos@empresa.com', especialidade: 'REDES' },
-  { id: 2, nome: 'Ana Souza', email: 'ana@empresa.com', especialidade: 'HARDWARE' },
-];
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-Automa%C3%A7%C3%A3o-4EAA25?logo=gnubash&logoColor=white)
+![Debian](https://img.shields.io/badge/Linux-Debian-A81D33?logo=debian&logoColor=white)
+![Status](https://img.shields.io/badge/status-conclu%C3%ADdo-success)
 
-let chamados = [
-  { id: 1, titulo: 'Internet caiu', descricao: 'Sem conexão na sala 3', prioridade: 'ALTA', status: 'ABERTO', tecnicoId: 1 },
-  { id: 2, titulo: 'Monitor sem imagem', descricao: 'Monitor do financeiro não liga', prioridade: 'MEDIA', status: 'EM_ANDAMENTO', tecnicoId: 2 },
-];
+</div>
 
-let proximoTecnicoId = 3;
-let proximoChamadoId = 3;
+---
 
-const vazio = (v) => v === undefined || v === null || String(v).trim() === '';
-const camposFaltando = (body, campos) => campos.filter((c) => vazio(body[c]));
-const pegarCampos = (body, campos) => {
-  const obj = {};
-  campos.forEach((c) => {
-    if (body[c] !== undefined) obj[c] = body[c];
-  });
-  return obj;
-};
+## 📑 Sumário
 
-function validarChamado(dados) {
-  if (dados.prioridade !== undefined && !PRIORIDADES_VALIDAS.includes(dados.prioridade)) {
-    return `prioridade deve ser uma de: ${PRIORIDADES_VALIDAS.join(', ')}`;
-  }
-  if (dados.status !== undefined && !STATUS_VALIDOS.includes(dados.status)) {
-    return `status deve ser um de: ${STATUS_VALIDOS.join(', ')}`;
-  }
-  if (
-    dados.tecnicoId !== undefined &&
-    dados.tecnicoId !== null &&
-    !tecnicos.find((t) => t.id === Number(dados.tecnicoId))
-  ) {
-    return 'tecnicoId informado não existe';
-  }
-  return null;
-}
+1. [Sobre o projeto](#-sobre-o-projeto)
+2. [Equipe](#-equipe)
+3. [Tecnologias](#-tecnologias)
+4. [Arquitetura e modelo de dados](#-arquitetura-e-modelo-de-dados)
+5. [Estrutura do repositório](#-estrutura-do-repositório)
+6. [Como executar](#-como-executar)
+7. [Gerenciamento de processos (Debian)](#-gerenciamento-de-processos-debian)
+8. [Endpoints da API](#-endpoints-da-api)
+9. [Exemplos de uso com cURL](#-exemplos-de-uso-com-curl)
+10. [Códigos HTTP](#-códigos-http-utilizados)
+11. [Automação de testes](#-automação-de-testes-bash)
+12. [Regras de negócio](#-regras-de-negócio)
 
-const CAMPOS_TECNICO = ['nome', 'email', 'especialidade'];
+---
 
-app.get(`${BASE}/tecnicos`, (req, res) => {
-  let resultado = tecnicos;
-  if (req.query.especialidade) {
-    resultado = resultado.filter(
-      (t) => t.especialidade.toLowerCase() === req.query.especialidade.toLowerCase()
-    );
-  }
-  res.status(200).json(resultado);
-});
+## 📌 Sobre o projeto
 
-app.get(`${BASE}/tecnicos/:id`, (req, res) => {
-  const tecnico = tecnicos.find((t) => t.id === Number(req.params.id));
-  if (!tecnico) return res.status(404).json({ erro: 'Técnico não encontrado' });
-  res.status(200).json(tecnico);
-});
+API RESTful para gerenciamento de **suporte de T.I.**, desenvolvida em **Node.js com Express**. O sistema controla dois recursos relacionados, **Técnicos** e **Chamados**, com integridade relacional em memória, validação de payload, filtros por query params e respostas padronizadas com os status HTTP corretos.
 
-app.post(`${BASE}/tecnicos`, (req, res) => {
-  const faltando = camposFaltando(req.body, CAMPOS_TECNICO);
-  if (faltando.length) {
-    return res.status(400).json({ erro: 'Campos obrigatórios ausentes', campos: faltando });
-  }
-  const novo = { id: proximoTecnicoId++, ...pegarCampos(req.body, CAMPOS_TECNICO) };
-  tecnicos.push(novo);
-  res.status(201).json(novo);
-});
+O projeto é acompanhado por um **script de automação em Bash** (`curl` + `jq`) que testa todas as rotas e gera um **log de auditoria**, tudo rodando em **Linux Debian** e versionado no **GitHub**.
 
-app.put(`${BASE}/tecnicos/:id`, (req, res) => {
-  const tecnico = tecnicos.find((t) => t.id === Number(req.params.id));
-  if (!tecnico) return res.status(404).json({ erro: 'Técnico não encontrado' });
+**Tema escolhido:** 5 — Sistema de Chamados de Suporte T.I.
 
-  const faltando = camposFaltando(req.body, CAMPOS_TECNICO);
-  if (faltando.length) {
-    return res.status(400).json({ erro: 'Campos obrigatórios ausentes', campos: faltando });
-  }
-  Object.assign(tecnico, pegarCampos(req.body, CAMPOS_TECNICO));
-  res.status(200).json(tecnico);
-});
+---
 
-app.patch(`${BASE}/tecnicos/:id`, (req, res) => {
-  const tecnico = tecnicos.find((t) => t.id === Number(req.params.id));
-  if (!tecnico) return res.status(404).json({ erro: 'Técnico não encontrado' });
+## 👥 Equipe
 
-  const dados = pegarCampos(req.body, CAMPOS_TECNICO);
-  if (Object.keys(dados).length === 0) {
-    return res.status(400).json({ erro: `Envie ao menos um campo: ${CAMPOS_TECNICO.join(', ')}` });
-  }
-  const vazios = Object.keys(dados).filter((c) => vazio(dados[c]));
-  if (vazios.length) {
-    return res.status(400).json({ erro: 'Campos não podem ser vazios', campos: vazios });
-  }
+| Integrante | Papel |
+|:--|:--|
+| **Arthur Walcafre Oliveira** | Desenvolvimento, testes e documentação |
+| **Erick Simionato Santos** | Desenvolvimento, testes e documentação |
 
-  Object.assign(tecnico, dados);
-  res.status(200).json(tecnico);
-});
+**Orientador:** Prof. Irineu Moura Caldeira
 
-app.delete(`${BASE}/tecnicos/:id`, (req, res) => {
-  const indice = tecnicos.findIndex((t) => t.id === Number(req.params.id));
-  if (indice === -1) return res.status(404).json({ erro: 'Técnico não encontrado' });
+---
 
-  const [removido] = tecnicos.splice(indice, 1);
-  chamados.forEach((c) => {
-    if (c.tecnicoId === removido.id) c.tecnicoId = null;
-  });
-  res.status(200).json({ mensagem: 'Técnico removido com sucesso', tecnico: removido });
-});
+## 🧰 Tecnologias
 
-const CAMPOS_CHAMADO = ['titulo', 'descricao', 'prioridade', 'status', 'tecnicoId'];
-const OBRIGATORIOS_CHAMADO = ['titulo', 'descricao', 'prioridade'];
+| Tecnologia | Uso |
+|:--|:--|
+| Node.js | Ambiente de execução |
+| Express 4 | Framework web e roteamento |
+| Bash + cURL + jq | Automação de testes e leitura de JSON |
+| Linux Debian | Ambiente de execução e gestão de processos |
+| Git / GitHub | Versionamento e colaboração |
 
-app.get(`${BASE}/chamados`, (req, res) => {
-  let resultado = chamados;
-  if (req.query.status) {
-    resultado = resultado.filter((c) => c.status.toLowerCase() === req.query.status.toLowerCase());
-  }
-  if (req.query.prioridade) {
-    resultado = resultado.filter(
-      (c) => c.prioridade.toLowerCase() === req.query.prioridade.toLowerCase()
-    );
-  }
-  res.status(200).json(resultado);
-});
+---
 
-app.get(`${BASE}/chamados/:id`, (req, res) => {
-  const chamado = chamados.find((c) => c.id === Number(req.params.id));
-  if (!chamado) return res.status(404).json({ erro: 'Chamado não encontrado' });
-  res.status(200).json(chamado);
-});
+## 🧱 Arquitetura e modelo de dados
 
-app.post(`${BASE}/chamados`, (req, res) => {
-  const faltando = camposFaltando(req.body, OBRIGATORIOS_CHAMADO);
-  if (faltando.length) {
-    return res.status(400).json({ erro: 'Campos obrigatórios ausentes', campos: faltando });
-  }
+Os dados ficam em **memória** (arrays no `server.js`), sem banco externo.
 
-  const erro = validarChamado(req.body);
-  if (erro) return res.status(400).json({ erro });
+**Técnico** — `/api/v1/tecnicos`
 
-  const novo = {
-    id: proximoChamadoId++,
-    titulo: req.body.titulo,
-    descricao: req.body.descricao,
-    prioridade: req.body.prioridade,
-    status: req.body.status || 'ABERTO',
-    tecnicoId: req.body.tecnicoId !== undefined ? Number(req.body.tecnicoId) : null,
-  };
-  chamados.push(novo);
-  res.status(201).json(novo);
-});
+| Campo | Tipo | Observação |
+|:--|:--|:--|
+| `id` | número | Gerado automaticamente |
+| `nome` | texto | Obrigatório |
+| `email` | texto | Obrigatório |
+| `especialidade` | texto | Obrigatório (ex.: REDES, HARDWARE, SOFTWARE) |
 
-app.put(`${BASE}/chamados/:id`, (req, res) => {
-  const chamado = chamados.find((c) => c.id === Number(req.params.id));
-  if (!chamado) return res.status(404).json({ erro: 'Chamado não encontrado' });
+**Chamado** — `/api/v1/chamados`
 
-  const faltando = camposFaltando(req.body, [...OBRIGATORIOS_CHAMADO, 'status']);
-  if (faltando.length) {
-    return res.status(400).json({ erro: 'Campos obrigatórios ausentes', campos: faltando });
-  }
+| Campo | Tipo | Observação |
+|:--|:--|:--|
+| `id` | número | Gerado automaticamente |
+| `titulo` | texto | Obrigatório |
+| `descricao` | texto | Obrigatório |
+| `prioridade` | texto | Obrigatório: `BAIXA`, `MEDIA` ou `ALTA` |
+| `status` | texto | `ABERTO` (padrão), `EM_ANDAMENTO` ou `FECHADO` |
+| `tecnicoId` | número | Opcional; deve referenciar um técnico existente |
 
-  const erro = validarChamado(req.body);
-  if (erro) return res.status(400).json({ erro });
+**Relacionamento:** um técnico pode ter vários chamados (1:N), ligados pelo campo `tecnicoId`.
 
-  chamado.titulo = req.body.titulo;
-  chamado.descricao = req.body.descricao;
-  chamado.prioridade = req.body.prioridade;
-  chamado.status = req.body.status;
-  chamado.tecnicoId = req.body.tecnicoId !== undefined ? Number(req.body.tecnicoId) : null;
-  res.status(200).json(chamado);
-});
+---
 
-app.patch(`${BASE}/chamados/:id`, (req, res) => {
-  const chamado = chamados.find((c) => c.id === Number(req.params.id));
-  if (!chamado) return res.status(404).json({ erro: 'Chamado não encontrado' });
+## 📁 Estrutura do repositório
 
-  const dados = pegarCampos(req.body, CAMPOS_CHAMADO);
-  if (Object.keys(dados).length === 0) {
-    return res.status(400).json({ erro: `Envie ao menos um campo: ${CAMPOS_CHAMADO.join(', ')}` });
-  }
+```text
+projeto-chamados-ti/
+├── server.js               # API Express (rotas, validações, dados em memória)
+├── testes_automacao.sh     # Script Bash de testes (curl + jq)
+├── resultado_execucao.log  # Log de auditoria gerado pelo script
+├── package.json            # Dependências e script de start
+└── README.md               # Documentação
+```
 
-  const erro = validarChamado(dados);
-  if (erro) return res.status(400).json({ erro });
+---
 
-  if (dados.tecnicoId !== undefined && dados.tecnicoId !== null) {
-    dados.tecnicoId = Number(dados.tecnicoId);
-  }
+## 🚀 Como executar
 
-  Object.assign(chamado, dados);
-  res.status(200).json(chamado);
-});
+**Pré-requisitos:** Node.js 18+, npm, Git, `curl` e `jq`.
 
-app.delete(`${BASE}/chamados/:id`, (req, res) => {
-  const indice = chamados.findIndex((c) => c.id === Number(req.params.id));
-  if (indice === -1) return res.status(404).json({ erro: 'Chamado não encontrado' });
+```bash
+sudo apt update && sudo apt install -y curl jq
+```
 
-  const [removido] = chamados.splice(indice, 1);
-  res.status(200).json({ mensagem: 'Chamado removido com sucesso', chamado: removido });
-});
+**1. Clonar o repositório**
 
-app.use((req, res) => {
-  res.status(404).json({ erro: 'Rota não encontrada' });
-});
+```bash
+git clone https://github.com/SEU-USUARIO/projeto-chamados-ti.git
+cd projeto-chamados-ti
+```
 
-app.use((err, req, res, next) => {
-  if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({ erro: 'JSON inválido no corpo da requisição' });
-  }
-  res.status(500).json({ erro: 'Erro interno do servidor' });
-});
+**2. Instalar as dependências**
 
-app.listen(PORT, () => {
-  console.log(`API de Chamados de T.I. rodando em http://localhost:${PORT}${BASE}`);
-});
-3.3. testes_automacao.sh (Script Bash de Testes)#!/bin/bash
-BASE="http://localhost:3009/api/v1"
-PASSOU=0
-FALHOU=0
+```bash
+npm install
+```
 
-chamar() {
-  local metodo="$1"
-  local rota="$2"
-  local esperado="$3"
-  local dados="$4"
+**3. Iniciar o servidor**
 
-  echo ""
-  echo "------------------------------------------------------------"
-  echo ">> $metodo $rota"
-  [ -n "$dados" ] && echo ">> Corpo enviado: $dados"
+```bash
+npm start
+```
 
-  if [ -n "$dados" ]; then
-    resp=$(curl -s -w "\n%{http_code}" -X "$metodo" "$BASE$rota" \
-      -H "Content-Type: application/json" -d "$dados")
-  else
-    resp=$(curl -s -w "\n%{http_code}" -X "$metodo" "$BASE$rota")
-  fi
+✅ Saída esperada: `API de Chamados de T.I. rodando em http://localhost:3009/api/v1`
 
-  codigo=$(echo "$resp" | tail -n1)
-  corpo=$(echo "$resp" | sed '$d')
+---
 
-  echo "Status HTTP: $codigo (esperado: $esperado)"
-  echo "$corpo" | jq . 2>/dev/null || echo "$corpo"
+## ⚙️ Gerenciamento de processos (Debian)
 
-  if [ "$codigo" = "$esperado" ]; then
-    echo "RESULTADO: PASSOU"
-    PASSOU=$((PASSOU + 1))
-  else
-    echo "RESULTADO: FALHOU"
-    FALHOU=$((FALHOU + 1))
-  fi
-}
+```bash
+npm start &                # sobe a API em background
+ps aux | grep node         # localiza o PID do processo
+kill -9 <PID>              # encerra o processo
+```
 
-echo ""
-echo "============================================================"
-echo " LOG DE AUDITORIA - TESTES DA API DE CHAMADOS DE T.I."
-echo " Data/Hora: $(date '+%d/%m/%Y %H:%M:%S')"
-echo "============================================================"
+---
 
-echo ""
-echo "######## ENTIDADE: TÉCNICOS ########"
-chamar POST /tecnicos 201 '{"nome":"Marcos Lima","email":"marcos@empresa.com","especialidade":"SOFTWARE"}'
-TID=$(echo "$corpo" | jq -r '.id' 2>/dev/null)
+## 📚 Endpoints da API
 
-chamar POST /tecnicos 400 '{"nome":"Sem Email"}'
-chamar GET /tecnicos 200
-chamar GET "/tecnicos?especialidade=REDES" 200
-chamar GET "/tecnicos/$TID" 200
-chamar GET /tecnicos/999 404
-chamar PUT "/tecnicos/$TID" 200 '{"nome":"Marcos Lima Jr","email":"marcos.jr@empresa.com","especialidade":"SEGURANCA"}'
-chamar PUT "/tecnicos/$TID" 400 '{"nome":"Incompleto"}'
-chamar PATCH "/tecnicos/$TID" 200 '{"especialidade":"INFRAESTRUTURA"}'
-chamar PATCH /tecnicos/999 404 '{"nome":"Fantasma"}'
+**Base URL:** `http://localhost:3009/api/v1`
 
-echo ""
-echo "######## ENTIDADE: CHAMADOS ########"
-chamar POST /chamados 201 "{\"titulo\":\"Impressora travada\",\"descricao\":\"Papel agarrado na bandeja\",\"prioridade\":\"BAIXA\",\"tecnicoId\":$TID}"
-CID=$(echo "$corpo" | jq -r '.id' 2>/dev/null)
+### Técnicos
 
-chamar POST /chamados 400 '{"titulo":"Sem descricao"}'
-chamar GET /chamados 200
-chamar GET "/chamados?status=ABERTO" 200
-chamar GET "/chamados?prioridade=ALTA" 200
-chamar GET "/chamados/$CID" 200
-chamar GET /chamados/999 404
-chamar PUT "/chamados/$CID" 200 "{\"titulo\":\"Impressora travada (revisado)\",\"descricao\":\"Troca de rolo necessária\",\"prioridade\":\"MEDIA\",\"status\":\"EM_ANDAMENTO\",\"tecnicoId\":$TID}"
-chamar PUT "/chamados/$CID" 400 '{"titulo":"Faltou o resto"}'
-chamar PATCH "/chamados/$CID" 200 '{"status":"FECHADO"}'
-chamar PATCH "/chamados/$CID" 400 '{"status":"STATUS_INVENTADO"}'
-chamar PATCH /chamados/999 404 '{"status":"FECHADO"}'
+| Método | Endpoint | Parâmetros | Descrição |
+|:--|:--|:--|:--|
+| `GET` | `/tecnicos` | Query: `especialidade` (opcional) | Lista técnicos, com filtro por especialidade |
+| `GET` | `/tecnicos/:id` | Path: `id` | Retorna um técnico específico |
+| `POST` | `/tecnicos` | Body: `nome`, `email`, `especialidade` | Cadastra um técnico (**201**) |
+| `PUT` | `/tecnicos/:id` | Path: `id` · Body: todos os campos | Substituição completa |
+| `PATCH` | `/tecnicos/:id` | Path: `id` · Body: campos desejados | Atualização parcial |
+| `DELETE` | `/tecnicos/:id` | Path: `id` | Remove o técnico e desvincula seus chamados |
 
-echo ""
-echo "######## REMOÇÕES ########"
-chamar DELETE "/chamados/$CID" 200
-chamar DELETE "/chamados/$CID" 404
-chamar DELETE "/tecnicos/$TID" 200
-chamar DELETE "/tecnicos/$TID" 404
+### Chamados
 
-echo ""
-echo "============================================================"
-echo " RESUMO: $PASSOU testes passaram | $FALHOU falharam"
-echo "============================================================"
-🐧 4. Comandos e Procedimentos Operacionais (Debian & cURL)4.1. Inicialização e Gerenciamento do Servidor# Navegar até o diretório do projeto
-cd ~/curso-pbe1/projeto-chamados-ti
+| Método | Endpoint | Parâmetros | Descrição |
+|:--|:--|:--|:--|
+| `GET` | `/chamados` | Query: `status`, `prioridade` (opcionais) | Lista chamados, com filtros combináveis |
+| `GET` | `/chamados/:id` | Path: `id` | Retorna um chamado específico |
+| `POST` | `/chamados` | Body: `titulo`, `descricao`, `prioridade` (+ `status`, `tecnicoId`) | Cria chamado (status padrão `ABERTO`) |
+| `PUT` | `/chamados/:id` | Path: `id` · Body: todos os campos | Atualização completa |
+| `PATCH` | `/chamados/:id` | Path: `id` · Body: campos desejados | Atualização parcial (ex.: fechar chamado) |
+| `DELETE` | `/chamados/:id` | Path: `id` | Exclui o chamado |
 
-# Iniciar o servidor em segundo plano
-npm start &
+---
 
-# Listar processos para verificar a execução do Node.js
-ps aux | grep node
+## 💻 Exemplos de uso com cURL
 
-# Encerrar o processo do servidor (substitua PID pelo número encontrado)
-kill -9 <PID>
-4.2. Execução dos Testes Automatizados# Conceder permissão de execução ao script
-chmod +x testes_automacao.sh
+**Cadastrar um técnico**
 
-# Executar bateria de testes e gerar arquivo de log
-./testes_automacao.sh | tee resultado_execucao.log
-4.3. Exemplos de Requisições via cURL (CRUD Prático)🔹 Cadastrar Técnico:curl -i -X POST http://localhost:3009/api/v1/tecnicos \
+```bash
+curl -i -X POST http://localhost:3009/api/v1/tecnicos \
   -H "Content-Type: application/json" \
   -d '{"nome":"Marcos Lima","email":"marcos@empresa.com","especialidade":"SOFTWARE"}'
-🔹 Listar Técnicos por Especialidade:curl -i -X GET "http://localhost:3009/api/v1/tecnicos?especialidade=REDES"
-🔹 Criar Chamado:curl -i -X POST http://localhost:3009/api/v1/chamados \
+```
+
+**Filtrar técnicos por especialidade**
+
+```bash
+curl -i "http://localhost:3009/api/v1/tecnicos?especialidade=REDES"
+```
+
+**Abrir um chamado vinculado a um técnico**
+
+```bash
+curl -i -X POST http://localhost:3009/api/v1/chamados \
   -H "Content-Type: application/json" \
   -d '{"titulo":"Impressora travada","descricao":"Papel agarrado","prioridade":"BAIXA","tecnicoId":1}'
-🔹 Atualizar Status do Chamado (PATCH):curl -i -X PATCH http://localhost:3009/api/v1/chamados/1 \
+```
+
+**Fechar um chamado (PATCH)**
+
+```bash
+curl -i -X PATCH http://localhost:3009/api/v1/chamados/1 \
   -H "Content-Type: application/json" \
   -d '{"status":"FECHADO"}'
-🔹 Remover Chamado:curl -i -X DELETE http://localhost:3009/api/v1/chamados/1
+```
+
+**Listar apenas chamados abertos de prioridade alta**
+
+```bash
+curl -s "http://localhost:3009/api/v1/chamados?status=ABERTO&prioridade=ALTA" | jq .
+```
+
+**Remover um chamado**
+
+```bash
+curl -i -X DELETE http://localhost:3009/api/v1/chamados/1
+```
+
+---
+
+## 📋 Códigos HTTP utilizados
+
+| Código | Significado | Quando ocorre |
+|:--:|:--|:--|
+| **200** | OK | GET, PUT, PATCH e DELETE bem-sucedidos |
+| **201** | Created | POST com cadastro realizado |
+| **400** | Bad Request | Campos obrigatórios ausentes, JSON malformado, status/prioridade/técnico inválidos |
+| **404** | Not Found | ID não localizado ou rota inexistente |
+
+---
+
+## 🧪 Automação de testes (Bash)
+
+O script `testes_automacao.sh` percorre **todas as rotas** da API com `curl`, formata os retornos com `jq`, compara o status HTTP recebido com o esperado e imprime `PASSOU` ou `FALHOU` em cada teste, finalizando com um resumo.
+
+Com o servidor rodando, execute:
+
+```bash
+chmod +x testes_automacao.sh
+./testes_automacao.sh | tee resultado_execucao.log
+```
+
+O arquivo `resultado_execucao.log` guarda o **log de auditoria** completo, com data e hora, requisições, respostas e o resumo final.
+
+---
+
+## 📐 Regras de negócio
+
+- Todo chamado criado sem `status` nasce como **ABERTO**.
+- Só é possível vincular um chamado a um `tecnicoId` **que exista**.
+- Ao remover um técnico, os chamados dele **não são apagados**: ficam sem responsável (`tecnicoId: null`).
+- Os filtros por query param **não diferenciam maiúsculas de minúsculas**.
+- Os dados vivem **em memória**: reiniciar o servidor restaura os dados iniciais.
+
+---
+
+<div align="center">
+
+**Arthur Walcafre Oliveira** · **Erick Simionato Santos**
+Orientador: Prof. Irineu Moura Caldeira
+SENAI · Mauá · 2026
+
+</div>
+EOF
