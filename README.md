@@ -118,7 +118,7 @@ sudo apt update && sudo apt install -y curl jq
 **1. Clonar o repositório**
 
 ```bash
-git clone https://github.com/SEU-USUARIO/projeto-chamados-ti.git
+git clone https://github.com/erickssantos-creator/projeto-chamados-ti.git
 cd projeto-chamados-ti
 ```
 
@@ -241,7 +241,7 @@ Com o servidor rodando, execute:
 
 ```bash
 chmod +x testes_automacao.sh
-./testes_automacao.sh | tee resultado_execucao.log
+./testes_automacao.sh | cat resultado_execucao.log
 ```
 
 O arquivo `resultado_execucao.log` guarda o **log de auditoria** completo, com data e hora, requisições, respostas e o resumo final.
