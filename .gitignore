@@ -1,2 +1,4 @@
 node_modules/
 resultado_execucao.log
+node_modules/
+*.log
