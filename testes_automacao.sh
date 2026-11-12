@@ -1,4 +1,6 @@
 #!/bin/bash
+exec > resultado_execucao.log 2>&1
+
 # Script de automação de testes - API de Chamados de T.I.
 BASE="http://localhost:3009/api/v1"
 PASSOU=0
@@ -41,7 +43,7 @@ echo "============================================================"
 echo ""
 echo "######## ENTIDADE: TÉCNICOS ########"
 chamar POST /tecnicos 201 '{"nome":"Marcos Lima","email":"marcos@empresa.com","especialidade":"SOFTWARE"}'
-TID=$(echo "$corpo" | jq -r '.id 2>/dev/null')
+TID=$(echo "$corpo" | jq -r '.id' 2>/dev/null)
 
 chamar POST /tecnicos 400 '{"nome":"Sem Email"}'
 chamar GET /tecnicos 200
@@ -56,7 +58,7 @@ chamar PATCH /tecnicos/999 404 '{"nome":"Fantasma"}'
 echo ""
 echo "######## ENTIDADE: CHAMADOS ########"
 chamar POST /chamados 201 "{\"titulo\":\"Impressora travada\",\"descricao\":\"Papel agarrado na bandeja\",\"prioridade\":\"BAIXA\",\"tecnicoId\":$TID}"
-CID=$(echo "$corpo" | jq -r '.id 2>/dev/null')
+CID=$(echo "$corpo" | jq -r '.id' 2>/dev/null)
 
 chamar POST /chamados 400 '{"titulo":"Sem descricao"}'
 chamar GET /chamados 200
