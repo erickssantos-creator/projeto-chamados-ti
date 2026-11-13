@@ -1,0 +1,116 @@
+================================================================================
+ROTEIRO DE APRESENTACAO (10 MINUTOS) - API DE CHAMADOS DE SUPORTE T.I.
+Projeto Integrador Final (PBE1) - SENAI "Jairo Candido" (Maua - 2026)
+Integrantes: Erick Simionato Santos e Arthur Walcafre Oliveira
+================================================================================
+
+DIVISAO DO TEMPO:
+- 0:00 a 4:30 -> Parte 1: Explicacao das funcionalidades no server.js
+- 4:30 a 9:30 -> Parte 2: Demonstracao pratica no terminal
+- 9:30 a 10:00 -> Encerramento e perguntas
+
+--------------------------------------------------------------------------------
+PARTE 1 - EXPLICANDO AS FUNCIONALIDADES NO SERVER.JS (0:00 a 4:30)
+Tela: Arquivo server.js aberto no editor
+--------------------------------------------------------------------------------
+
+"Bom dia/boa noite, professor Irineu e turma. Eu sou o [Seu Nome] e, junto com o
+[Nome do Parceiro], desenvolvemos uma API RESTful em Node.js com Express para o
+gerenciamento de Chamados de Suporte de T.I.
+
+Vou apresentar como funcionam as regras e rotas no nosso arquivo principal, o
+server.js, e em seguida o [Nome do Parceiro] vai executar todas essas
+funcionalidades na pratica no terminal.
+
+[Apontando para o server.js]
+O sistema trabalha com duas entidades relacionadas armazenadas em memoria:
+Tecnicos (/api/v1/tecnicos) e Chamados (/api/v1/chamados). Elas se conectam num
+relacionamento de 1 para N atraves da chave tecnicoId - ou seja, um tecnico pode
+atender varios chamados. O nosso codigo garante duas regras importantes nesse
+vinculo:
+1. Ele impede criar ou editar um chamado apontando para um tecnicoId que nao
+   existe;
+2. Se um tecnico for excluido, os chamados dele nao sao apagados - ficam sem
+   tecnico (tecnicoId: null).
+
+Para as duas entidades, implementamos o CRUD completo com os cinco metodos
+HTTP:
+- GET na rota base para listar todos os registros e GET /:id para buscar um item
+  especifico;
+- POST para cadastrar um novo tecnico ou abrir um chamado;
+- PUT para atualizar o registro inteiro, exigindo todos os campos obrigatorios;
+- PATCH para atualizacao parcial - por exemplo, alterar apenas o status de um
+  chamado para FECHADO sem precisar reenviar os outros dados;
+- e DELETE para remover um registro pelo ID.
+
+Todas as respostas seguem os padroes de status HTTP:
+- 201 Created quando um registro e criado com sucesso via POST;
+- 200 OK nas consultas (GET), atualizacoes (PUT e PATCH) e exclusoes (DELETE);
+- 400 Bad Request quando ha erro de validacao - como falta de campos
+  obrigatorios, JSON invalido ou valores incorretos de status, prioridade ou
+  tecnico;
+- e 404 Not Found quando o ID pesquisado nao existe na memoria.
+
+Por fim, nas rotas de listagem GET, adicionamos suporte a Query Parameters para
+filtragem sem diferenciar maiusculas de minusculas - permitindo buscar tecnicos
+por ?especialidade=REDES e combinar filtros nos chamados, como
+?status=ABERTO&prioridade=ALTA.
+
+Agora passo a palavra para o [Nome do Parceiro] demonstrar essas
+funcionalidades funcionando na pratica."
+
+--------------------------------------------------------------------------------
+PARTE 2 - DEMONSTRACAO PRATICA NO TERMINAL (4:30 a 9:30)
+Tela: Terminal Linux Debian
+--------------------------------------------------------------------------------
+
+"Obrigado, [Nome do Parceiro]. Eu sou o [Seu Nome] e vou mostrar agora a API
+funcionando ao vivo no terminal.
+
+[Iniciando o servidor: npm start &]
+Primeiro, subimos o servidor em segundo plano com 'npm start &', deixando a API
+ativa na porta 3009.
+
+[Rodando: ./demo_apresentacao.sh]
+Agora vou executar o nosso script demo_apresentacao.sh, que testa na pratica
+cada funcionalidade que acabamos de explicar usando requisicoes curl:
+
+- No Passo 1, fazemos um POST criando um novo chamado e recebemos 201 Created
+  com o ID gerado;
+- No Passo 2, consultamos esse chamado especifico com GET /:id e recebemos
+  200 OK;
+- No Passo 3, testamos os Query Parameters (?status=ABERTO&prioridade=ALTA),
+  retornando 200 OK apenas com os chamados que batem com o filtro;
+- No Passo 4, usamos o PATCH para fazer a atualizacao parcial mudando apenas o
+  status para FECHADO (200 OK);
+- No Passo 5, usamos o PUT para substituir todos os dados do chamado (200 OK);
+- No Passo 6, excluimos esse chamado com DELETE, recebendo 200 OK;
+- No Passo 7, tentamos buscar um ID inexistente (/999) e comprovamos o retorno
+  404 Not Found;
+- E no Passo 8, tentamos criar um chamado sem os campos obrigatorios e
+  comprovamos a validacao retornando 400 Bad Request.
+
+[Opcional, se sobrar 1 minuto: ./testes_automacao.sh]
+Alem dessa demonstracao rapida, tambem temos o testes_automacao.sh, que valida
+24 cenarios completos nas duas entidades e confirma que todos passam sem erro.
+
+Com isso encerramos a nossa apresentacao. Obrigado e ficamos a disposicao para
+perguntas!"
+
+================================================================================
+COLA RAPIDA - COMANDOS PARA DIGITAR NO TERMINAL
+================================================================================
+
+1. Subir o servidor em segundo plano:
+   npm start &
+
+2. Rodar a demonstracao das 8 funcionalidades:
+   ./demo_apresentacao.sh
+
+3. (Opcional) Rodar a bateria completa de 24 testes:
+   ./testes_automacao.sh && tail -n 10 resultado_execucao.log
+
+4. Encerrar o servidor ao final:
+   ps aux | grep node
+   kill -9 <PID>
+================================================================================
