@@ -178,26 +178,22 @@ kill -9 <PID>              # encerra o processo
 
 ## 💻 Exemplos de uso com cURL
 
-**Cadastrar um técnico**
+**Criar novo chamado**
 
 ```bash
-curl -i -X POST http://localhost:3009/api/v1/tecnicos \
-  -H "Content-Type: application/json" \
-  -d '{"nome":"Marcos Lima","email":"marcos@empresa.com","especialidade":"SOFTWARE"}'
+ curl -s -i -X POST http://localhost:3009/api/v1/chamados -H 'Content-Type: application/json' -d '{"titulo":"Teclado com defeito","descricao":"Tecla Enter falhando","prioridade":"ALTA","tecnicoId":1}'
 ```
 
-**Filtrar técnicos por especialidade**
+**Buscar chamado criado por ID (GET /:id)**
 
 ```bash
-curl -i "http://localhost:3009/api/v1/tecnicos?especialidade=REDES"
+ curl -s -i -X GET http://localhost:3009/api/v1/chamados/5
 ```
 
-**Abrir um chamado vinculado a um técnico**
+**Filtrar chamados por Query Parameters (status=ABERTO & prioridade=ALTA)**
 
 ```bash
-curl -i -X POST http://localhost:3009/api/v1/chamados \
-  -H "Content-Type: application/json" \
-  -d '{"titulo":"Impressora travada","descricao":"Papel agarrado","prioridade":"BAIXA","tecnicoId":1}'
+ curl -s -i -X GET 'http://localhost:3009/api/v1/chamados?status=ABERTO&prioridade=ALTA'
 ```
 
 **Fechar um chamado (PATCH)**
@@ -208,17 +204,36 @@ curl -i -X PATCH http://localhost:3009/api/v1/chamados/1 \
   -d '{"status":"FECHADO"}'
 ```
 
-**Listar apenas chamados abertos de prioridade alta**
+**Fechar chamado com atualizacao parcial (PATCH)**
 
 ```bash
-curl -s "http://localhost:3009/api/v1/chamados?status=ABERTO&prioridade=ALTA" | jq .
+ curl -s -i -X PATCH http://localhost:3009/api/v1/chamados/5 -H 'Content-Type: application/json' -d '{"status":"FECHADO"}'
 ```
 
-**Remover um chamado**
+**Substituir dados completos do chamado (PUT)**
 
 ```bash
-curl -i -X DELETE http://localhost:3009/api/v1/chamados/1
+curl -s -i -X PUT http://localhost:3009/api/v1/chamados/5 -H 'Content-Type: application/json' -d '{"titulo":"Teclado substituido","descricao":"Troca realizada no setor","prioridade":"BAIXA","status":"FECHADO","tecnicoId":1}'
 ```
+
+**Excluir chamado pelo ID (DELETE)**
+
+```bash
+ curl -s -i -X DELETE http://localhost:3009/api/v1/chamados/5
+```
+
+**Buscar chamado excluido**
+
+```bash
+ curl -s -i -X GET http://localhost:3009/api/v1/chamados/999
+```
+
+**Tentar criar chamado sem campos obrigatorios (POST invalido)**
+
+```bash
+ curl -s -i -X POST http://localhost:3009/api/v1/chamados -H 'Content-Type: application/json' -d '{"titulo":"Chamado incompleto"}'
+```
+
 
 ---
 
